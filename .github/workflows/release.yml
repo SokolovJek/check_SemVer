@@ -1,25 +1,39 @@
-name: Release
+name: Manual Tag Release
+
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - 'v*'  # Запускать при пуше тегов вида v1.0.0
 
 jobs:
-  build:
+  increment_version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Get version from tag
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-      - name: Build and publish
+      - name: Increment version
+        # run: |
+        #   echo '1' > version.txt
+        #   current=$(cat version.txt)
+        #   echo $((current + 1)) > version.txt
+        #   echo "NEW_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+        #   echo "$env.NEW_VERSION"
+        #   cat version.txt
         run: |
-          echo "Building version $VERSION"
-          # Здесь может быть сборка пакета (npm, pip, docker и т. д.)
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ env.VERSION }}
-          body: "See CHANGELOG.md for details"
+          echo 'v1.2.3' > version.txt
+          version=$(cat version.txt)
+
+          # Разбиваем на компоненты
+          IFS='.' read -ra parts <<< "${version#v}"
+          major=${parts[0]}
+          minor=${parts[1]}
+          patch=${parts[2]}
+
+          # Увеличиваем PATCH на 1
+          patch=$((patch + 1))
+
+          # Собираем новую версию
+          new_version="v${major}.${minor}.${patch}"
+
+          # Записываем обратно
+          echo "$new_version" > version.txt
+
+          echo "Updated version: $new_version"
+                    
