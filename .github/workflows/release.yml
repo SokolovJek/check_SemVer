@@ -14,4 +14,6 @@ jobs:
           current=$(cat version.txt)
           echo $((current + 1)) > version.txt
           echo "NEW_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+          echo "$env.NEW_VERSION"
+          cat version.txt
           
