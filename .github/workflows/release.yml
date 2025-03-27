@@ -2,48 +2,16 @@ name: Manual Tag Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version_type:
-        description: 'Version type (major/minor/patch)'
-        required: true
-        default: 'minor'
-        type: choice
-        options:
-          - major
-          - minor
-          - patch
+  push:
 
 jobs:
-  release:
+  increment_version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-            node-version: '20'
-
-      - name: Bump version
-        run: |
-          npm version ${{ inputs.version_type }} --no-git-tag-version
-          VERSION=$(node -p "require('./package.json').version")
-          echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Create tag
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git tag -a "v${{ env.NEW_VERSION }}" -m "Release ${{ env.NEW_VERSION }}"
-          git push origin "v${{ env.NEW_VERSION }}"
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "v${{ env.NEW_VERSION }}"
-          release_name: "Release ${{ env.NEW_VERSION }}"
-          body: "See CHANGELOG.md for details"
+      - name: Increment version
+      run: |
+        echo '1' > version.txt
+        current=$(cat version.txt)
+        echo $((current + 1)) > version.txt
+        echo "NEW_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+        
