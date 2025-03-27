@@ -1,25 +1,44 @@
-name: Release
+name: Manual Tag Release
+
 on:
-  push:
-    tags:
-      - 'v*'  # Запускать при пуше тегов вида v1.0.0
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version type (major/minor/patch)'
+        required: true
+        default: 'minor'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Get version from tag
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-      - name: Build and publish
+        with:
+          fetch-depth: 0
+
+      - name: Bump version
         run: |
-          echo "Building version $VERSION"
-          # Здесь может быть сборка пакета (npm, pip, docker и т. д.)
-      - name: Create GitHub Release
+          npm version ${{ inputs.version_type }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Create tag
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag -a "v${{ env.NEW_VERSION }}" -m "Release ${{ env.NEW_VERSION }}"
+          git push origin "v${{ env.NEW_VERSION }}"
+
+      - name: Create Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ env.VERSION }}
+          tag_name: "v${{ env.NEW_VERSION }}"
+          release_name: "Release ${{ env.NEW_VERSION }}"
           body: "See CHANGELOG.md for details"
