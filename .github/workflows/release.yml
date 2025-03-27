@@ -21,6 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: '20'
+
       - name: Bump version
         run: |
           npm version ${{ inputs.version_type }} --no-git-tag-version
