@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Increment version
-      run: |
-        echo '1' > version.txt
-        current=$(cat version.txt)
-        echo $((current + 1)) > version.txt
-        echo "NEW_VERSION=$(cat version.txt)" >> $GITHUB_ENV
-        
+        run: |
+          echo '1' > version.txt
+          current=$(cat version.txt)
+          echo $((current + 1)) > version.txt
+          echo "NEW_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+          
